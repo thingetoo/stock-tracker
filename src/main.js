@@ -2,12 +2,14 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import Plot from 'react-plotly.js';
 import SearchBar from './components/searchbar.component.js'
+import './main.css'
 
 const Main = () => {
   const [stockPrice, setStockPrice] = useState([]);
   const [stockTime, setStockTime] = useState([]);
   const [stockSymbol, setStockSymbol] = useState('TSLA');
   const [isValidStock, setIsValidStock] = useState(true);
+  const [stockUp, setStockUp] = useState(true);
 
   const apiKey = process.env.REACT_APP_ALPHA_VANTAGE_API_KEY
 
@@ -33,38 +35,43 @@ const Main = () => {
     .then(response => {
       setIsValidStock(true)
       const responseData = response.data['Time Series (5min)'];
+      console.log(responseData)
       // console.log(Object.keys(responseData))
       const openingPrices = priceConverter(Object.values(responseData))
       const times = Object.keys(responseData)
       setStockTime(times)
       setStockPrice(openingPrices)
-      console.log(Object.values(responseData))
+      openingPrices[0] < openingPrices[openingPrices.length - 1] ? setStockUp(false) : setStockUp(true)
     }).catch(err => {
       setIsValidStock(false)
       console.log(err)
     })
   }
 
-  useEffect(fetchData, [apiKey, stockSymbol]); // only rerun if either of these change
+  useEffect(fetchData, []); // dependency array will cause this function to rerun if either of the values inside of it changes
+
+  const isStockUp = stockUp ? {color: 'green'} : {color: 'red'}
+
 
   return(
-
-    <div style={{position: 'absolute'}}>
+    <div className='main-container'>
       <SearchBar isValidStock={isValidStock} onChange={handleChange} onSubmit={handleSubmit} stockSymbol={stockSymbol}  />
-      <Plot
-          data={
-            [
-            {
-              x:  stockTime,
-              y: stockPrice,
-              type: 'scatter',
-              mode: 'lines+markers',
-              marker: {color: 'red'},
-            },
-          ]
-        }
-          layout={{width: 1000, height: 800, title: 'Stock Data'}}
-        />
+      <div className='plot'>
+        <Plot
+            data={
+              [
+                {
+                  x:  stockTime,
+                  y: stockPrice,
+                  type: 'scatter',
+                  mode: 'lines+markers',
+                  marker: isStockUp,
+                },
+              ]
+            }
+            layout={{width: 1000, height: 800, title: 'Stock Data'}}
+            />
+      </div>
     </div>
   )
 }
