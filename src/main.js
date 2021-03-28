@@ -9,7 +9,7 @@ const Main = () => {
   const [stockSymbol, setStockSymbol] = useState('TSLA');
   const [isValidStock, setIsValidStock] = useState(true);
 
-  const apiKey = '1RHB4BDTMTSHBAWZ'
+  const apiKey = process.env.REACT_APP_ALPHA_VANTAGE_API_KEY
 
   const priceConverter = function(priceArr) {
     const result = [];
@@ -45,9 +45,7 @@ const Main = () => {
     })
   }
 
-  useEffect(() => {
-    fetchData()
-    }, []);
+  useEffect(fetchData, [apiKey, stockSymbol]); // only rerun if either of these change
 
   return(
 
